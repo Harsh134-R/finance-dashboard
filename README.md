@@ -244,7 +244,8 @@ Three users are seeded automatically when the app starts.
 src/main/java/com/zorvyn/financedashboard/
 ├── config/
 │   ├── DataSeeder.java           
-│   ├── OpenApiConfig.java        
+│   ├── OpenApiConfig.java 
+│   ├── CorsConfig.java
 │   └── SecurityConfig.java       
 ├── controller/
 │   ├── AnomalyController.java
