@@ -1,7 +1,7 @@
 # Finance Dashboard Backend
 
-A role-based finance management backend created for the Zorvyn internship assessment. 
-It offers secure REST APIs to manage financial records, users, and dashboard analytics. 
+A role-based finance management backend 
+offering secure REST APIs to manage financial records, users, and dashboard analytics. 
 JWT-based authentication and role-level access control are enforced at the security layer.
 
 ---
@@ -85,9 +85,9 @@ Three users are seeded automatically when the app starts.
 
 | Role | Email | Password | Access Level |
 |---|---|---|---|
-| Admin | admin@zorvyn.com | admin123 | Full access |
-| Analyst | analyst@zorvyn.com | analyst123 | Read + Dashboard analytics |
-| Viewer | viewer@zorvyn.com | viewer123 | Read only |
+| Admin | admin@project.com | admin123 | Full access |
+| Analyst | analyst@project.com | analyst123 | Read + Dashboard analytics |
+| Viewer | viewer@project.com | viewer123 | Read only |
 
 ### How to authenticate in Swagger UI
 
@@ -241,7 +241,7 @@ Three users are seeded automatically when the app starts.
 ## Project Structure
 
 ```
-src/main/java/com/zorvyn/financedashboard/
+src/main/java/com/project/financedashboard/
 ├── config/
 │   ├── DataSeeder.java           
 │   ├── OpenApiConfig.java 
@@ -315,7 +315,7 @@ src/main/java/com/zorvyn/financedashboard/
 ```bash
 curl -X POST http://localhost:8081/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@zorvyn.com","password":"admin123"}'
+  -d '{"email":"admin@project.com","password":"admin123"}'
 ```
 
 ### Get all transactions
@@ -388,27 +388,6 @@ Validation errors include field-level details:
 
 ---
 
-## Design Decisions and Assumptions
-
-### Assumptions
-
-- All newly registered users are assigned the VIEWER role by default. Admins promote them afterward via `PUT /api/users/{id}/role`.
-- The assignment describes Viewer as able to "view dashboard data" - this was interpreted as viewing transaction records only. Dashboard analytics are restricted to Analyst and Admin to create meaningful role separation and realistic access boundaries.
-- Soft delete is used for transactions to preserve financial audit history. Hard delete is never performed on financial records - this is a compliance requirement in real fintech systems.
-- `transaction_date` represents when the money actually moved, separate from `created_at` which records when the entry was added to the system. Conflating these two is a common mistake in financial systems.
-- Audit logs are only generated for changes made through the API. Seeded data does not produce audit entries by design - seeding bypasses the service layer intentionally to avoid polluting the audit trail with test data.
-
-### Tradeoffs
-
-- `DECIMAL(15,2)` is used for all monetary amounts instead of `FLOAT` or `DOUBLE` to avoid floating-point precision errors. This is a strict requirement in fintech. Floating-point arithmetic on currency leads to rounding errors that add up over time.
-- All dashboard aggregations use JPQL `@Query` with `SUM`, `COUNT`, and `GROUP BY`. No records are loaded into Java memory for processing. This approach scales to millions of records without losing performance.
-- `JpaSpecificationExecutor` is used for transaction filtering to build dynamic queries cleanly without string concatenation or multiple repository methods.
-- Enums are stored as strings (`@Enumerated(EnumType.STRING)`) to prevent unnoticed data corruption if the enum ordinal order changes.
-- Java 21 virtual threads are enabled via `spring.threads.virtual.enabled=true` for better request concurrency without code changes. This matters for a high-throughput finance platform.
-- Roles are enforced at the Spring Security method level using `@PreAuthorize`. They are never checked with if-else statements inside service methods. This keeps access control centralized and auditable.
-- Anomaly detection is done entirely in SQL using `AVG()` with `HAVING` clauses, with three severity levels: NORMAL, WARNING (50–200% above average), and CRITICAL (200%+ above average). This mimics the statistical baseline comparison used in real fraud detection systems.
-- The audit log holds JSON snapshots of records before and after each change, along with the performing user's ID, email, and IP address. This meets compliance requirements in financial systems.
----
 
 ## Additional Features Beyond Requirements
 
